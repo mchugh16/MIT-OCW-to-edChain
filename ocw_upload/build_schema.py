@@ -1,3 +1,4 @@
+import schema_dict 
 
 class SchemaBuilder():
 	"""
@@ -104,8 +105,8 @@ class SchemaBuilder():
 
 	def add_subject_metadata(self, metadata):
 		"""
-		Turn subject level metadata element (its subelements 
-		and attributes) into an ordered dictionary.
+		Assign subject level metadata element (its subelements 
+		and attributes) to an ordered dictionary of metadata.
 
 		Args: metadata - ordered dictionary generated from
 						 metadata element object 
@@ -114,26 +115,55 @@ class SchemaBuilder():
 		"""
 		self._product.metadata = metadata
 
+	def add_schema_metadata(self, key, data):
+		"""
+		Add key-value pair of metadata to dictionary of schema data.
+
+		Args:
+			key - Corresponds to key in schema with same name
+			data - metadata bound to type
+		"""
+		self._product.schema_data[key] = data
+
+	def get_product(self):
+		self._product.to_schema()
+		print(self._product.schema)
+
+
 class Product:
-	"""
-	Represent the complex object (for now just a dict) under construction.
-	"""
 	def __init__(self):
 		self.organizations = {}
 		self.resources = {}
 		self.metadata = {}
+		self.schema_data = {}
+		self.schema = schema_dict.schema
 
 	def to_schema(self):
+		#pass resources, organizations, metadata into schema
+		self.schema["resources"] = self.resources
+		self.schema["organizedMaterial"] = self.organizations
+		self.schema["courseSpecifications"] = self.metadata
+
+		#pass specific metadata (metadata common to every course) into schema
+		self.course_name_to_schema()
+		self.course_code_to_schema()
+		self.version_to_schema()
+		self.instructor_to_schema()
 
 
+	def course_name_to_schema(self):
+		course_name = self.schema_data["name"]
+		self.schema["name"] = course_name
 
-# def main():
-# 	# concrete_builder = ConcreteBuilder()
-# 	# director = Director()
-# 	# director.construct(concrete_builder)
-# 	# product = concrete_builder.product
-# 	schema_builder = SchemaBuilder(Builder())
+	def course_code_to_schema(self):
+		course_code = self.schema_data["courseCode"]
+		self.schema["courseCode"] = course_code
 
+	def version_to_schema(self):
+		version = self.schema_data["version"]
+		self.schema["version"] = version
 
-# if __name__ == "__main__":
-# 	main()
+	def instructor_to_schema(self):
+		instructor = self.schema_data["Instructor"]
+		self.schema["hasCourseInstance"]["Instructor"]["name"] = instructor
+

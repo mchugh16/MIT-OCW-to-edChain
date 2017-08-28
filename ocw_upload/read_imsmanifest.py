@@ -10,13 +10,15 @@ class Director:
 
 	def __init__(self, builder, config, course_folder):
 		self.full_path = os.path.join(config.COURSES_DIR, course_folder)
-		self.file_full_path = os.path.join(full_path, config.IMS_MANIFEST)
+		self.file_full_path = os.path.join(self.full_path, config.IMS_MANIFEST)
 		
 		self._builder = builder
 		self.imsmanifest_reader = IMSManifestReader(self._builder, self.file_full_path)
 
+
 	def construct(self):
 		self.imsmanifest_reader.process()
+
 
 
 
@@ -43,6 +45,14 @@ class IMSManifestReader:
 		organizations = self.read_organizations(root, item_parent_map)
 		resources = self.read_resources(root)
 		metadata = self.read_subject_metadata(root)
+		course_name = self.read_course_name(root)
+		course_code = self.read_course_code(root)
+		course_version = self.read_version(root)
+		course_instructor = self.read_instructor(root)
+
+		product = self._builder.get_product()
+		
+
 
 	def find_imsmanifest_root(self, imsmanifest):
 		"""
@@ -238,7 +248,7 @@ class IMSManifestReader:
 	def read_subject_metadata(self, root):
 		"""
 		Get subject level metadata element object
-		 and pass to subject metadata bulder. 
+		 and pass to subject metadata builder. 
 
 		Args: root - root of entire imsmanifest's document tree 
 				     which is an instance of the ElementTree wrapper class 
@@ -249,21 +259,73 @@ class IMSManifestReader:
 		
 		self._builder.add_subject_metadata(metadata_dict)
 
+	def read_course_name(self, root):
+		"""
+		Get the course name from metadata and pass it to metadata schema builder
+
+		Args: root - root of entire imsmanifest's document tree 
+				     which is an instance of the ElementTree wrapper class 
+		"""
+
+		metadata_element = root.find("default:metadata", self.XMLNAMESPACES)
+		general_info_element = metadata_element.find("lom:general", self.XMLNAMESPACES)
+		title_element = general_info_element.find("lom:title", self.XMLNAMESPACES)
+		course_name = title_element.find("lom:string", self.XMLNAMESPACES).text
+
+		self._builder.add_schema_metadata("name", course_name)
+
+	def read_course_code(self, root):
+		"""
+		Get the course code from metadata and pass it to metadata schema builder
+
+		Args: root - root of entire imsmanifest's document tree 
+				     which is an instance of the ElementTree wrapper class 
+		"""
+		metadata_element = root.find("default:metadata", self.XMLNAMESPACES)
+		general_info_element = metadata_element.find("lom:general", self.XMLNAMESPACES)
+		identifier_element = general_info_element.find("lom:identifier", self.XMLNAMESPACES)
+		course_code = identifier_element.find("lom:entry", self.XMLNAMESPACES).text
+
+		self._builder.add_schema_metadata("courseCode", course_code)
+
+	def read_version(self, root):
+		"""
+		Get the version of the course from metadata 
+		and pass it to metadata schema builder
+
+		Args: root - root of entire imsmanifest's document tree 
+				     which is an instance of the ElementTree wrapper class 
+		"""
+		metadata_element = root.find("default:metadata", self.XMLNAMESPACES)
+		lifecycle_element = metadata_element.find("lom:lifecycle", self.XMLNAMESPACES)
+		version_element = lifecycle_element.find("lom:version", self.XMLNAMESPACES)
+		course_version = version_element.find("lom:string", self.XMLNAMESPACES).text
+
+		self._builder.add_schema_metadata("version", course_version)
+
+	def read_instructor(self, root):
+		"""
+		Get the instructor of the course from metadata 
+		and pass it to metadata schema builder
+
+		Args: root - root of entire imsmanifest's document tree 
+				     which is an instance of the ElementTree wrapper class 
+		"""
+		metadata_element = root.find("default:metadata", self.XMLNAMESPACES)
+		lifecycle_element = metadata_element.find("lom:lifecycle", self.XMLNAMESPACES)
+		contribute_element = lifecycle_element.find("lom:contribute", self.XMLNAMESPACES)
+		author = contribute_element.find("lom:entity", self.XMLNAMESPACES).text
+
+
+		self._builder.add_schema_metadata("Instructor", author)
+
+
+
 def main():
 	for course_folder in config.COURSE_FOLDERS:
 
 		director = Director(SchemaBuilder(), config, course_folder)
 		director.construct()
-		# full_path = os.path.join(config.COURSES_DIR, course_folder)
-		# file_full_path = os.path.join(full_path, config.IMS_MANIFEST)
-		# reader = IMSManifestReader(SchemaBuilder(), file_full_path)
-			
-		# root = reader.find_imsmanifest_root(file_full_path)
-		# item_parent_map = reader.map_parents_items(file_full_path)
-
-		# organizations = reader.read_organizations(root, item_parent_map)
-		# resources = reader.read_resources(root)
-		# metadata = reader.read_subject_metadata(root)
 
 if __name__ == '__main__':
 	main()

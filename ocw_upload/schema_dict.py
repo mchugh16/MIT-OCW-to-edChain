@@ -1,16 +1,13 @@
-{
+schema = {
 	"@context": "http://schema.org/",
 	"@type": "schema:Course",
 	"name":"",
 	"courseCode": "",
-	"publisher": {
-			"@type": "Organization",
-			"name":""
-		},
+	"version" : "",
 	
 	"isPartOf": {
 			"@type": "CreativeWork",
-			"name": ""
+			"name": "MIT OpenCourseWare" 
 		},
 	 
 	 "hasCourseInstance": {
@@ -19,22 +16,10 @@
 			"@type":"Person",
 			"name":""
 				},
-			"startDate": ""
+
 		},
 
-	 "creator": {
-			"@type": "Person",
-			"name": ""   
-		},
-
-	 "copyrightHolder": "",
-
-	 "inLanguage":{
-			"@type": "Language",
-			"name": ""
-		},
-
-		"courseOrganization" : {
+		"organizedMaterial" : {
 
 		},
 
@@ -42,13 +27,17 @@
 
 		},
 
-	 	"videos":{
+		"courseSpecifications" : {
+
+		},
+
+		"videos":{
 			"@type": "VideoObject",
 			"transcript": "",
 			"hash":""
 		},
 
 		"hashCode":"value"
-}
+	}
 
 
