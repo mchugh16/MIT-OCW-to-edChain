@@ -1,4 +1,5 @@
 import schema_dict 
+import json
 
 class SchemaBuilder():
 	"""
@@ -6,6 +7,8 @@ class SchemaBuilder():
 	Builder interface.
 	Define and keep track of the representation it creates.
 	Provide an interface for retrieving the product.
+
+	
 	"""
 	def __init__(self):
 		self._product = Product()
@@ -127,7 +130,8 @@ class SchemaBuilder():
 
 	def get_product(self):
 		self._product.to_schema()
-		print(self._product.schema)
+		self._product.schema_to_file()
+
 
 
 class Product:
@@ -150,7 +154,6 @@ class Product:
 		self.version_to_schema()
 		self.instructor_to_schema()
 
-
 	def course_name_to_schema(self):
 		course_name = self.schema_data["name"]
 		self.schema["name"] = course_name
@@ -166,4 +169,10 @@ class Product:
 	def instructor_to_schema(self):
 		instructor = self.schema_data["Instructor"]
 		self.schema["hasCourseInstance"]["Instructor"]["name"] = instructor
+
+	def schema_to_file(self):
+		with open('mit_ocw_test.json', 'w') as outfile:
+			json.dump(self.schema, outfile)
+
+
 

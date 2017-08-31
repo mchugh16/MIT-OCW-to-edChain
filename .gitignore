@@ -102,3 +102,7 @@ ENV/
 
 .DS_Store
 /courses
+
+ocw_upload/mit_ocw_CC_courses.json
+ocw_upload/mit_ocw_test.json
+db.sqlite3

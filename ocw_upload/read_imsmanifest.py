@@ -17,6 +17,10 @@ class Director:
 
 
 	def construct(self):
+		"""
+		Instruct reader to process input and pass specified data 
+		to the builder for the product to be constructed.
+		"""
 		self.imsmanifest_reader.process()
 
 
@@ -39,6 +43,9 @@ class IMSManifestReader:
 
 
 	def process(self):
+		"""
+		Parse input, pass data to builder for construction of product.
+		"""
 		root = self.find_imsmanifest_root(self.imsmanifest)
 		item_parent_map = self.map_parents_items(self.imsmanifest)
 
