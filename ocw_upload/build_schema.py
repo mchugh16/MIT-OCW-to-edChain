@@ -171,7 +171,7 @@ class Product:
 		self.schema["hasCourseInstance"]["Instructor"]["name"] = instructor
 
 	def schema_to_file(self):
-		with open('mit_ocw_test.json', 'w') as outfile:
+		with open('mit_ocw_test3.json', 'w') as outfile:
 			json.dump(self.schema, outfile)
 
 

@@ -1,0 +1,19 @@
+html {
+	font-family: Helvetica;
+
+}
+
+nav
+{
+	overflow: auto;
+}
+
+.background-video {
+background: url("https://video.wixstatic.com/video/11062b_35e9c1a919df41df8b95c20340739349/1080p/mp4/file.mp4");
+width: 100vw;
+height: 100vh;
+background-repeat: repeat-y;
+display: block;
+position: relative;
+background-size: 100% 100%;
+} 
