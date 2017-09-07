@@ -1,16 +1,19 @@
 import requests
 import bs4
 import re
+import urllib.request, urllib.parse, urllib.error
 
 from fixture_builder import FixtureBuilder
+from config_content_builder import ConfigBuilder
 
 class Director:
 
-	def __init__(self, builder, root_url):
+	def __init__(self, fixture_builder, config_builder, root_url):
 		self.root_url = root_url
 		
-		self._builder = builder
-		self.mit_ocw_scraper= MITOCWScraper(self._builder, self.root_url)
+		self._fixture_builder = fixture_builder
+		self._config_builder = config_builder
+		self.mit_ocw_scraper= MITOCWScraper(self._fixture_builder, self._config_builder, self.root_url)
 
 	def construct(self):
 		"""
@@ -22,10 +25,12 @@ class Director:
 class MITOCWScraper:
 	#use vars and property decorator - convert to reader builder format
 
-	def __init__(self, builder, root_url):
-		self._builder = builder
+	def __init__(self, fixture_builder, config_builder, root_url):
+		self._fixture_builder = fixture_builder
+		self._config_builder = config_builder
 		self.root_url = root_url
 		self.pk = 0
+		self.content_download_urls = []
 
 	def process(self):
 		#get links to all course homepages
@@ -37,6 +42,10 @@ class MITOCWScraper:
 
 		#get product
 		product = self.get_product()
+
+		content_urls = self.get_course_content()
+		self.download_course_content(content_urls)
+
 
 
 	def get_course_page_urls(self):
@@ -61,25 +70,26 @@ class MITOCWScraper:
 		"""
 		Check license of each course and get links to courses
 		protected under the creative commons license. Pass link
-		and the soupified homepage of the course to course info getter.
+		and the soupified homepage of the course to course info getter 
+		AND course download url getter.
 
 		Args: 
 			course_page_urls - list of relative links to all courses
-							 	on MIT OCW's "View All Courses" page 
+								on MIT OCW's "View All Courses" page 
 
 		"""
 
-		for course_url in course_page_urls:
+		for course_url in course_page_urls[0:3]:
 			index_url = self.root_url + course_url
 			response = requests.get(index_url)
 			soup = bs4.BeautifulSoup(response.content)
 			cc_citation = soup.find("a", href = "https://creativecommons.org/licenses/by-nc-sa/4.0/")
 
 			if cc_citation:
-				self.get_course_info(course_url, soup)
+				# self.get_course_info(soup)
+				self.get_course_download_urls(soup)
 
-
-	def get_course_info(self, course_url, soup):
+	def get_course_info(self, soup):
 		"""
 		Set attributes of course (including the course's name, instructors,
 		version (semester and year), level (undergraduate, graduate, etc),
@@ -87,7 +97,6 @@ class MITOCWScraper:
 		and this image's caption) and pass attributes to builder.
 
 		Args: 
-			course_url - relative link to course
 			soup - soupified homepage of course
 
 		"""
@@ -116,7 +125,7 @@ class MITOCWScraper:
 		self.pk += 1
 
 		#pass attributes to builder 
-		self._builder.build_course(self.pk, course_name, instructors, version, level, chp_image, chp_image_caption, description, features)
+		self._fixture_builder.build_course(self.pk, course_name, instructors, version, level, chp_image, chp_image_caption, description, features)
 
 
 
@@ -237,8 +246,70 @@ class MITOCWScraper:
 
 		return course_features
 
+	def get_course_download_urls(self, soup):
+		"""
+		Get links to download pages for each course.
+
+		Args:
+			soup - soupified homepage of course
+		"""
+		left_nav_bar_div = soup.find("div", id="left")
+		list_features = left_nav_bar_div.find("ul")
+		for feature in list_features.find_all("a"):
+			if feature.get_text() == "Download Course Materials":
+				feature_link = feature.get("href")
+				full_link = self.root_url + feature_link
+				self.content_download_urls.append(full_link)
+
+	def get_course_content(self):
+		"""
+		Get download links for each course's content.
+
+		Returns: List of download links
+		"""
+		content_urls = []
+		for link in self.content_download_urls:
+			response = requests.get(link)
+			soup = bs4.BeautifulSoup(response.content)
+			course_wrapper = soup.find("div", id="course_wrapper")
+			download_page_info = course_wrapper.find("main", id="course_inner_chp")
+			download_div = download_page_info.find("div", class_="downloadLink")
+			download_link_a = download_div.find("a", class_="downloadNowButton")
+			download_link = download_link_a.get("href")
+			full_link = self.root_url + download_link
+			content_urls.append(full_link)
+
+		return content_urls
+
+	def download_course_content(self, content_links):
+		"""
+		Download content folders for every course, pass zip file to config builder.
+		
+		Args:
+			content_links - links to zipped content files
+
+		"""
+
+		link_num = 0
+		for link in content_links:
+			filename = "course" + str(link_num) + ".zip"
+			urllib.request.urlretrieve(link, filename)
+			f = urllib.request.urlopen(link)
+			data = f.read()
+
+			filename2 = "../courses/" + filename
+			with open(filename2, "wb") as zip_code:
+				zip_code.write(data)
+
+			self._config_builder.unzip(filename2)
+
+			link_num += 1
+
+
+
+
 	def get_product(self):
-		self._builder.get_product()
+		self._fixture_builder.get_product()
 
 
 
@@ -248,7 +319,7 @@ def main():
 	root_url = "https://ocw.mit.edu"
 	outfile = "mit_ocw_CC_courses.json"
 
-	director = Director(FixtureBuilder(outfile), root_url)
+	director = Director(FixtureBuilder(outfile), ConfigBuilder(), root_url)
 	director.construct()
 
 if __name__ == "__main__":

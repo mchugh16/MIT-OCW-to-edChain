@@ -1,6 +1,7 @@
 import schema_dict 
 import json
 
+
 class SchemaBuilder():
 	"""
 	Construct and assemble parts of the product by implementing the
