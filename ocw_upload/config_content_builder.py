@@ -25,7 +25,7 @@ class ConfigBuilder():
 
 		with zipfile.ZipFile(zip_path, 'r') as z:
 			z.extractall(courses_dir)
-	
+
 
 	# def build_course(self, pk, course_name, instructors, version, level, chp_image_source, chp_image_caption, course_description, course_features):
 	# 	"""
