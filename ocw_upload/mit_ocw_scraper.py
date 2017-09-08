@@ -79,13 +79,14 @@ class MITOCWScraper:
 
 		"""
 
-		for course_url in course_page_urls:
+		for course_url in course_page_urls[0:3]:
 			index_url = self.root_url + course_url
 			response = requests.get(index_url)
 			soup = bs4.BeautifulSoup(response.content)
 			cc_citation = soup.find("a", href = "https://creativecommons.org/licenses/by-nc-sa/4.0/")
 
 			if cc_citation:
+				print(course_url)
 				# self.get_course_info(soup)
 				self.get_course_download_urls(soup)
 

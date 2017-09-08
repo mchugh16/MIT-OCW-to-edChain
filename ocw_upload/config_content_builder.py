@@ -20,7 +20,7 @@ class ConfigBuilder():
 		cwd = os.getcwd()
 		zip_path = os.path.join(cwd, zip_name)
 
-		courses_dir = "../courses/" + linknum
+		courses_dir = "../courses/" + str(linknum)
 
 
 		with zipfile.ZipFile(zip_path, 'r') as z:
