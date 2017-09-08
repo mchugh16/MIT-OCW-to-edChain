@@ -15,12 +15,12 @@ class ConfigBuilder():
 	def __init__(self):
 		self._product = Product()
 
-	def unzip(self, zip_name):
+	def unzip(self, zip_name, linknum):
 
 		cwd = os.getcwd()
 		zip_path = os.path.join(cwd, zip_name)
 
-		courses_dir = "../courses"
+		courses_dir = "../courses/" + linknum
 
 
 		with zipfile.ZipFile(zip_path, 'r') as z:

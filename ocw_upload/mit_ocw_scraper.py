@@ -79,7 +79,7 @@ class MITOCWScraper:
 
 		"""
 
-		for course_url in course_page_urls[0:3]:
+		for course_url in course_page_urls:
 			index_url = self.root_url + course_url
 			response = requests.get(index_url)
 			soup = bs4.BeautifulSoup(response.content)
@@ -301,7 +301,7 @@ class MITOCWScraper:
 			with open(filename2, "wb") as zip_code:
 				zip_code.write(data)
 
-			self._config_builder.unzip(filename2)
+			self._config_builder.unzip(filename2, link_num)
 
 			link_num += 1
 
